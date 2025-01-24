@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survival Instincts CAPTCHA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f7f7f7;
+    }
+    .captcha-wrapper {
+      background-color: white;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 300px;
+      margin: auto;
+    }
+    .instruction {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    .question {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .answers label {
+      display: block;
+      margin: 5px 0;
+    }
+    .button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      margin-top: 20px;
+    }
+    .button:hover {
+      background-color: #45a049;
+    }
+    .feedback {
+      margin-top: 10px;
+      padding: 10px;
+      text-align: center;
+      border-radius: 5px;
+    }
+    .positive {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .negative {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <div class="captcha-wrapper">
+    <div class="instruction">Answer the question correctly to prove that you are human.</div>
+    <div class="well">
+      <p class="question" id="question"></p>
+      <div class="answers" id="answers"></div>
+      <div class="feedback" id="feedback" style="display:none;"></div>
+      <button class="button" id="submit-answer">Submit Answer</button>
+    </div>
+    <div class="name">Survival Instincts</div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "What do you do if you're lost in the desert?",
+        answers: [
+          "Dig a hole and wait for water",
+          "Follow the vultures",
+          "Build a sandcastle and call it home",
+          "Drink the water you brought because you're responsible"
+        ],
+        correctAnswerIndex: 3
+      },
+      {
+        question: "What’s the best way to escape a zombie apocalypse?",
+        answers: [
+          "Run to the mall and live your best life",
+          "Try to reason with them (they were human once)",
+          "Cover yourself in ketchup and play dead",
+          "Cardio. Always cardio."
+        ],
+        correctAnswerIndex: 3
+      },
+      {
+        question: "What do you do if an alien spaceship lands in your backyard?",
+        answers: [
+          "Offer them your Wi-Fi password",
+          "Challenge them to a dance battle",
+          "Hide under your bed and hope they leave",
+          "Show them cat videos to prove humanity's worth"
+        ],
+        correctAnswerIndex: 3
+      },
+      {
+        question: "What’s the best way to survive a tornado?",
+        answers: [
+          "Spin in the opposite direction to cancel it out",
+          "Call Thor and ask for a favor",
+          "Build a house made of Jenga blocks",
+          "Find shelter and brace yourself like an action hero"
+        ],
+        correctAnswerIndex: 3
+      },
+      {
+        question: "What should you do if you meet a time traveler?",
+        answers: [
+          "Ask for next week's lottery numbers",
+          "Convince them to take you back to the dinosaurs",
+          "Tell them how cool the future YOU must be",
+          "Panic quietly because you broke the timeline"
+        ],
+        correctAnswerIndex: 3
+      },
+    ];
+  
+    // Function to get a random question
+    function getRandomQuestion() {
+      const randomIndex = Math.floor(Math.random() * questions.length);
+      return questions[randomIndex];
+    }
+  
+    // Function to display the question and answers
+    function displayQuestion() {
+      const questionContainer = document.getElementById('question');
+      const answersContainer = document.getElementById('answers');
+      const feedbackContainer = document.getElementById('feedback');
+      const submitButton = document.getElementById('submit-answer');
+  
+      // Reset feedback visibility
+      feedbackContainer.style.display = 'none';
+      submitButton.disabled = false;
+  
+      // Get random question and display it
+      const randomQuestion = getRandomQuestion();
+      questionContainer.textContent = randomQuestion.question;
+      answersContainer.innerHTML = '';
+  
+      randomQuestion.answers.forEach((answer, index) => {
+        const answerElement = document.createElement('label');
+        answerElement.innerHTML = `
+          <input type="radio" name="answer" value="${index}" />
+          ${answer}
+        `;
+        answersContainer.appendChild(answerElement);
+      });
+  
+      // Handle submit action
+      submitButton.onclick = function () {
+        const selectedAnswer = document.querySelector('input[name="answer"]:checked');
+        if (!selectedAnswer) {
+          alert('Please select an answer!');
+          return;
+        }
+  
+        const selectedIndex = parseInt(selectedAnswer.value);
+        const isCorrect = selectedIndex === randomQuestion.correctAnswerIndex;
+        feedbackContainer.style.display = 'block';
+  
+        if (isCorrect) {
+  // Send 'pass' to the server without displaying any feedback
+  fetch('/captcha', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ captcha: 'pass' }),
+  })
+  .then((response) => {
+    if (response.ok) {
+      // Optionally, you can redirect the user after the response is successfully received
+      window.location.href = '/';
+    } else {
+      alert('Failed to validate CAPTCHA on the server.');
+    }
+  });
+}
+        else {
+          feedbackContainer.textContent = "No, you are not human. Try again.";
+          feedbackContainer.className = 'feedback negative';
+        }
+  
+        // Disable the button after submitting
+        submitButton.disabled = true;
+      };
+    }
+  
+    // Call displayQuestion on page load
+    window.onload = displayQuestion;
+  </script>
+  
+</body>
+</html>
