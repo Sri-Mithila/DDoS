@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <div id="responseMessage"></div>
+
+    <form id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br><br>
+        <button type="submit">Login</button>
+    </form>
+
+    <script>
+        // Fetch incoming requests count from the server before the user submits the form
+        async function getRequestCount() {
+            try {
+                const response = await fetch("/");  // Send a GET request to the root URL
+                const data = await response.json();
+                if (data.redirectToCaptcha) {
+                    // If the response indicates redirection to CAPTCHA
+                    window.location.href = '/captcha';
+                }
+            } catch (error) {
+                console.error("Error checking request count:", error);
+            }
+        }
+
+        // Make sure to check the request count when the page loads
+        getRequestCount();
+
+        // Handle login form submission
+        document.getElementById("loginForm").addEventListener("submit", async function(event) {
+            event.preventDefault();  // Prevent form from refreshing the page
+
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            const response = await fetch("/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            document.getElementById("responseMessage").innerText = data.message;
+        });
+    </script>
+</body>
+</html>
